@@ -43,7 +43,7 @@ const PROJECTS = [
     color: "#8b5cf6",
     icon: "🧠",
     github: "#",
-    live: "#",
+    live: "/demovids/MarketMindDemo.mp4",
     year: "2025",
   },
   {
