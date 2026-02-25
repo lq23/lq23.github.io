@@ -574,6 +574,7 @@ function HomePage({ setPage }) {
 
 function ProjectsPage() {
   const [selected, setSelected] = useState(null);
+  const [showVideo, setShowVideo] = useState(false);
 
   return (
     <div style={{
@@ -699,17 +700,93 @@ function ProjectsPage() {
               onMouseEnter={e => e.target.style.borderColor = THEME.accent}
               onMouseLeave={e => e.target.style.borderColor = THEME.border}
               >GitHub ↗</a>
-              <a href={selected.live} style={{
-                flex: 1, textAlign: "center", padding: "12px 20px",
-                background: selected.color, border: "none",
-                borderRadius: 10, color: THEME.bg, textDecoration: "none",
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 600,
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={e => e.target.style.transform = "translateY(-1px)"}
-              onMouseLeave={e => e.target.style.transform = "translateY(0)"}
-              >Watch Demo ↗</a>
+{selected.live && selected.live !== "#" && selected.live.endsWith(".mp4") ? (
+                <button
+                  onClick={() => setShowVideo(true)}
+                  style={{
+                    flex: 1, textAlign: "center", padding: "12px 20px",
+                    background: selected.color, border: "none",
+                    borderRadius: 10, color: THEME.bg,
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 600,
+                    transition: "all 0.2s ease", cursor: "pointer",
+                  }}
+                  onMouseEnter={e => e.target.style.transform = "translateY(-1px)"}
+                  onMouseLeave={e => e.target.style.transform = "translateY(0)"}
+                >Watch Demo ▶</button>
+              ) : (
+                <a href={selected.live} style={{
+                  flex: 1, textAlign: "center", padding: "12px 20px",
+                  background: selected.color, border: "none",
+                  borderRadius: 10, color: THEME.bg, textDecoration: "none",
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 600,
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={e => e.target.style.transform = "translateY(-1px)"}
+                onMouseLeave={e => e.target.style.transform = "translateY(0)"}
+                >Watch Demo ↗</a>
+              )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Player Modal */}
+      {showVideo && selected && (
+        <div
+          onClick={() => setShowVideo(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 300,
+            background: `${THEME.bg}f5`, backdropFilter: "blur(24px)",
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center",
+            animation: "fadeIn 0.3s ease",
+            padding: 24,
+          }}
+        >
+          <button
+            onClick={() => setShowVideo(false)}
+            style={{
+              position: "absolute", top: 24, left: 24,
+              background: `${THEME.surface}`, border: `1px solid ${THEME.border}`,
+              color: THEME.text, padding: "10px 20px", borderRadius: 10,
+              cursor: "pointer", fontSize: 14, fontWeight: 500,
+              fontFamily: "'JetBrains Mono', monospace",
+              display: "flex", alignItems: "center", gap: 8,
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={e => {
+              e.target.style.borderColor = THEME.accent;
+              e.target.style.color = THEME.accent;
+            }}
+            onMouseLeave={e => {
+              e.target.style.borderColor = THEME.border;
+              e.target.style.color = THEME.text;
+            }}
+          >← Back</button>
+
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: "90vw", maxHeight: "80vh", width: "100%",
+              display: "flex", flexDirection: "column", alignItems: "center",
+            }}
+          >
+            <h3 style={{
+              fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700,
+              marginBottom: 20, color: THEME.text,
+            }}>{selected.title} Demo</h3>
+            <video
+              controls
+              autoPlay
+              style={{
+                maxWidth: "100%", maxHeight: "70vh", borderRadius: 12,
+                border: `1px solid ${THEME.border}`,
+                boxShadow: `0 0 60px ${selected.color}30`,
+              }}
+            >
+              <source src={selected.live} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
         </div>
       )}
