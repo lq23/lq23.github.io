@@ -479,9 +479,7 @@ function HomePage({ setPage }) {
               textShadow: `0 0 60px ${THEME.accentGlow}`,
             }}>Larenz Quashie </span>
             <br />
-            <span style={{ color: THEME.text }}>
-              <TypewriterText text="I build things for the web." delay={800} />
-            </span>
+            
           </h1>
         </AnimatedEntry>
 
