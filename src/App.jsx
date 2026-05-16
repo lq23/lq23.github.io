@@ -32,7 +32,7 @@ const PROJECTS = [
     color: "#00e5a0",
     icon: "🎉",
     github: "#",
-    live: "#",
+    live: "/demovideos/PlanUpDemo.mp4",
     year: "2026",
   },
   {
