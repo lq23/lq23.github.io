@@ -32,7 +32,7 @@ const PROJECTS = [
     color: "#00e5a0",
     icon: "🎉",
     github: "#",
-    live: "/demovideos/PlanUpDemo.mp4",
+    live: "/demovids/PlanUpDemo.mp4",
     year: "2026",
   },
   {
@@ -140,6 +140,16 @@ const globalStyles = `
   .stagger-3 { animation-delay: 0.3s !important; }
   .stagger-4 { animation-delay: 0.4s !important; }
   .stagger-5 { animation-delay: 0.5s !important; }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
 `;
 
 // ─── COMPONENTS ───────────────────────────────────────────────
@@ -184,6 +194,15 @@ function AnimatedEntry({ children, delay = 0, style = {} }) {
 
 function Navbar({ page, setPage }) {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const el = document.getElementById("scroll-root");
@@ -193,67 +212,164 @@ function Navbar({ page, setPage }) {
     return () => el.removeEventListener("scroll", handler);
   }, [page]);
 
-  return (
-    <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-      padding: "0 40px", height: 64,
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: scrolled ? `${THEME.bg}e8` : "transparent",
-      backdropFilter: scrolled ? "blur(20px)" : "none",
-      borderBottom: scrolled ? `1px solid ${THEME.border}` : "1px solid transparent",
-      transition: "all 0.4s ease",
-    }}>
-      <div
-        onClick={() => setPage("home")}
-        style={{
-          cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
-          fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: 18,
-          letterSpacing: "-0.5px",
-        }}
-      >
-        <span style={{
-          display: "inline-flex", alignItems: "center", justifyContent: "center",
-          width: 32, height: 32, borderRadius: 8,
-          background: THEME.accentDim, border: `1px solid ${THEME.accent}40`,
-          fontSize: 14, color: THEME.accent,
-        }}>L</span>
-        <span style={{ color: THEME.text }}>Larenz</span>
-        <span style={{ color: THEME.accent }}>.dev</span>
-      </div>
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
 
-      <div style={{ display: "flex", gap: 4 }}>
-        {NAV_ITEMS.map(({ key, label }) => (
+  const handleNavClick = (key) => {
+    setPage(key);
+    setMobileMenuOpen(false);
+  };
+
+  return (
+    <>
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        padding: isMobile ? "0 20px" : "0 40px", height: 64,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: scrolled || mobileMenuOpen ? `${THEME.bg}e8` : "transparent",
+        backdropFilter: scrolled || mobileMenuOpen ? "blur(20px)" : "none",
+        borderBottom: scrolled ? `1px solid ${THEME.border}` : "1px solid transparent",
+        transition: "all 0.4s ease",
+      }}>
+        <div
+          onClick={() => handleNavClick("home")}
+          style={{
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+            fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: isMobile ? 16 : 18,
+            letterSpacing: "-0.5px",
+          }}
+        >
+          <span style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 32, height: 32, borderRadius: 8,
+            background: THEME.accentDim, border: `1px solid ${THEME.accent}40`,
+            fontSize: 14, color: THEME.accent,
+          }}>L</span>
+          <span style={{ color: THEME.text }}>Larenz</span>
+          <span style={{ color: THEME.accent }}>.dev</span>
+        </div>
+
+        {/* Desktop Nav */}
+        {!isMobile && (
+          <div style={{ display: "flex", gap: 4 }}>
+            {NAV_ITEMS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setPage(key)}
+                style={{
+                  background: page === key ? THEME.accentDim : "transparent",
+                  border: page === key ? `1px solid ${THEME.accent}30` : "1px solid transparent",
+                  color: page === key ? THEME.accent : THEME.textDim,
+                  padding: "8px 18px", borderRadius: 8, cursor: "pointer",
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+                  fontWeight: page === key ? 500 : 400,
+                  transition: "all 0.3s ease",
+                  letterSpacing: "0.3px",
+                }}
+                onMouseEnter={e => {
+                  if (page !== key) {
+                    e.target.style.color = THEME.text;
+                    e.target.style.background = THEME.surfaceHover;
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (page !== key) {
+                    e.target.style.color = THEME.textDim;
+                    e.target.style.background = "transparent";
+                  }
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Mobile Hamburger Button */}
+        {isMobile && (
           <button
-            key={key}
-            onClick={() => setPage(key)}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             style={{
-              background: page === key ? THEME.accentDim : "transparent",
-              border: page === key ? `1px solid ${THEME.accent}30` : "1px solid transparent",
-              color: page === key ? THEME.accent : THEME.textDim,
-              padding: "8px 18px", borderRadius: 8, cursor: "pointer",
-              fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
-              fontWeight: page === key ? 500 : 400,
-              transition: "all 0.3s ease",
-              letterSpacing: "0.3px",
+              background: "transparent", border: "none",
+              cursor: "pointer", padding: 8,
+              display: "flex", flexDirection: "column", gap: 5,
+              justifyContent: "center", alignItems: "center",
             }}
-            onMouseEnter={e => {
-              if (page !== key) {
-                e.target.style.color = THEME.text;
-                e.target.style.background = THEME.surfaceHover;
-              }
-            }}
-            onMouseLeave={e => {
-              if (page !== key) {
-                e.target.style.color = THEME.textDim;
-                e.target.style.background = "transparent";
-              }
-            }}
+            aria-label="Toggle menu"
           >
-            {label}
+            <span style={{
+              width: 24, height: 2, background: THEME.text,
+              borderRadius: 2, transition: "all 0.3s ease",
+              transform: mobileMenuOpen ? "rotate(45deg) translateY(7px)" : "none",
+            }} />
+            <span style={{
+              width: 24, height: 2, background: THEME.text,
+              borderRadius: 2, transition: "all 0.3s ease",
+              opacity: mobileMenuOpen ? 0 : 1,
+            }} />
+            <span style={{
+              width: 24, height: 2, background: THEME.text,
+              borderRadius: 2, transition: "all 0.3s ease",
+              transform: mobileMenuOpen ? "rotate(-45deg) translateY(-7px)" : "none",
+            }} />
           </button>
-        ))}
-      </div>
-    </nav>
+        )}
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div style={{
+          position: "fixed", top: 64, left: 0, right: 0, bottom: 0,
+          background: `${THEME.bg}f8`, backdropFilter: "blur(24px)",
+          zIndex: 99, animation: "fadeIn 0.3s ease",
+          display: "flex", flexDirection: "column",
+          padding: "40px 24px",
+        }}>
+          {NAV_ITEMS.map(({ key, label }, i) => (
+            <button
+              key={key}
+              onClick={() => handleNavClick(key)}
+              style={{
+                background: "transparent",
+                border: "none", borderBottom: `1px solid ${THEME.border}`,
+                color: page === key ? THEME.accent : THEME.text,
+                padding: "20px 0", cursor: "pointer",
+                fontFamily: "'Outfit', sans-serif", fontSize: 24,
+                fontWeight: page === key ? 600 : 400,
+                textAlign: "left",
+                transition: "all 0.3s ease",
+                animation: `fadeInUp 0.4s ease forwards`,
+                animationDelay: `${i * 0.08}s`,
+                opacity: 0,
+              }}
+            >
+              {label}
+              {page === key && (
+                <span style={{
+                  marginLeft: 12, color: THEME.accent, fontSize: 14,
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}>←</span>
+              )}
+            </button>
+          ))}
+
+          <div style={{
+            marginTop: "auto", paddingTop: 40,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+            color: THEME.textDim,
+          }}>
+            <p>Available for internships</p>
+            <p style={{ marginTop: 8 }}>larenzquashie406@gmail.com</p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -437,24 +553,34 @@ function ProjectCard3D({ project, index, onClick }) {
 // ─── PAGES ────────────────────────────────────────────────────
 
 function HomePage({ setPage }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column",
-      justifyContent: "center", alignItems: "center", padding: "120px 40px 80px",
+      justifyContent: "center", alignItems: "center",
+      padding: isMobile ? "100px 20px 60px" : "120px 40px 80px",
       position: "relative",
     }}>
-      <GlowOrb color={THEME.accent} size="400px" top="-100px" left="-100px" />
-      <GlowOrb color={THEME.purple} size="300px" top="200px" left="70%" delay={2} />
-      <GlowOrb color={THEME.blue} size="250px" top="60%" left="20%" delay={4} />
+      <GlowOrb color={THEME.accent} size={isMobile ? "250px" : "400px"} top="-100px" left="-100px" />
+      <GlowOrb color={THEME.purple} size={isMobile ? "200px" : "300px"} top="200px" left="70%" delay={2} />
+      <GlowOrb color={THEME.blue} size={isMobile ? "150px" : "250px"} top="60%" left="20%" delay={4} />
 
-      <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 800 }}>
+      <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 800, width: "100%" }}>
         {/* Status badge */}
         <AnimatedEntry delay={0.1}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 14,
-            color: THEME.accent, marginBottom: 32,
-            background: THEME.accentDim, padding: "8px 20px", borderRadius: 100,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 14,
+            color: THEME.accent, marginBottom: isMobile ? 24 : 32,
+            background: THEME.accentDim, padding: isMobile ? "6px 14px" : "8px 20px", borderRadius: 100,
             border: `1px solid ${THEME.accent}25`,
           }}>
             <span style={{
@@ -485,8 +611,9 @@ function HomePage({ setPage }) {
 
         <AnimatedEntry delay={0.35}>
           <p style={{
-            fontSize: 18, color: THEME.textMid, maxWidth: 520,
-            margin: "0 auto 44px", lineHeight: 1.7, fontWeight: 300,
+            fontSize: isMobile ? 15 : 18, color: THEME.textMid, maxWidth: 520,
+            margin: isMobile ? "0 auto 32px" : "0 auto 44px", lineHeight: 1.7, fontWeight: 300,
+            padding: isMobile ? "0 10px" : 0,
           }}>
             Full-stack developer & CS student at Syracuse University.
             Passionate about crafting intuitive, beautiful digital experiences.
@@ -495,13 +622,16 @@ function HomePage({ setPage }) {
 
         <AnimatedEntry delay={0.5}>
           <div style={{
-            display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap",
+            display: "flex", gap: isMobile ? 12 : 16, justifyContent: "center",
+            flexWrap: "wrap", flexDirection: isMobile ? "column" : "row",
+            alignItems: "center", padding: isMobile ? "0 20px" : 0,
           }}>
             <button
               onClick={() => setPage("projects")}
               style={{
                 background: THEME.accent, color: THEME.bg,
-                border: "none", padding: "14px 32px", borderRadius: 10,
+                border: "none", padding: isMobile ? "14px 0" : "14px 32px",
+                borderRadius: 10, width: isMobile ? "100%" : "auto",
                 fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 600,
                 cursor: "pointer", transition: "all 0.3s ease",
                 boxShadow: `0 0 30px ${THEME.accent}30`,
@@ -521,7 +651,9 @@ function HomePage({ setPage }) {
               onClick={() => setPage("contact")}
               style={{
                 background: "transparent", color: THEME.text,
-                border: `1px solid ${THEME.border}`, padding: "14px 32px", borderRadius: 10,
+                border: `1px solid ${THEME.border}`,
+                padding: isMobile ? "14px 0" : "14px 32px",
+                borderRadius: 10, width: isMobile ? "100%" : "auto",
                 fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 500,
                 cursor: "pointer", transition: "all 0.3s ease",
               }}
@@ -542,13 +674,14 @@ function HomePage({ setPage }) {
         {/* Tech stack */}
         <AnimatedEntry delay={0.65}>
           <div style={{
-            marginTop: 80, display: "flex", gap: 12, justifyContent: "center",
-            flexWrap: "wrap",
+            marginTop: isMobile ? 48 : 80, display: "flex", gap: isMobile ? 8 : 12,
+            justifyContent: "center", flexWrap: "wrap",
+            padding: isMobile ? "0 10px" : 0,
           }}>
             {["React", "Python", "FastAPI", "Flutter", "PostgreSQL", "AWS"].map((tech) => (
               <span key={tech} style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                color: THEME.textDim, padding: "6px 14px",
+                fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 11 : 12,
+                color: THEME.textDim, padding: isMobile ? "5px 10px" : "6px 14px",
                 border: `1px solid ${THEME.border}`, borderRadius: 6,
                 transition: "all 0.3s ease",
                 cursor: "default",
@@ -573,41 +706,49 @@ function HomePage({ setPage }) {
 function ProjectsPage() {
   const [selected, setSelected] = useState(null);
   const [showVideo, setShowVideo] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <div style={{
-      minHeight: "100vh", padding: "120px 40px 80px",
+      minHeight: "100vh", padding: isMobile ? "100px 16px 60px" : "120px 40px 80px",
       maxWidth: 1100, margin: "0 auto", position: "relative",
     }}>
-      <GlowOrb color={THEME.purple} size="350px" top="0" left="70%" />
-      <GlowOrb color={THEME.accent} size="300px" top="50%" left="-5%" delay={3} />
+      <GlowOrb color={THEME.purple} size={isMobile ? "200px" : "350px"} top="0" left="70%" />
+      <GlowOrb color={THEME.accent} size={isMobile ? "180px" : "300px"} top="50%" left="-5%" delay={3} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <AnimatedEntry delay={0.1}>
           <p style={{
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 13,
             color: THEME.accent, marginBottom: 12,
           }}>{"// featured work"}</p>
         </AnimatedEntry>
         <AnimatedEntry delay={0.15}>
           <h2 style={{
-            fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 5vw, 52px)",
+            fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 5vw, 52px)",
             fontWeight: 800, marginBottom: 12, letterSpacing: "-1.5px",
           }}>Projects</h2>
         </AnimatedEntry>
         <AnimatedEntry delay={0.2}>
           <p style={{
-            fontSize: 16, color: THEME.textMid, marginBottom: 56,
+            fontSize: isMobile ? 14 : 16, color: THEME.textMid, marginBottom: isMobile ? 36 : 56,
             maxWidth: 500, lineHeight: 1.6,
           }}>
-            A selection of things I've built. Hover to interact, click to explore.
+            {isMobile ? "Tap to explore my work." : "A selection of things I've built. Hover to interact, click to explore."}
           </p>
         </AnimatedEntry>
 
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: 24,
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(300px, 1fr))",
+          gap: isMobile ? 16 : 24,
         }}>
           {PROJECTS.map((project, i) => (
             <ProjectCard3D
@@ -627,22 +768,26 @@ function ProjectsPage() {
           style={{
             position: "fixed", inset: 0, zIndex: 200,
             background: `${THEME.bg}e0`, backdropFilter: "blur(20px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
+            display: "flex", alignItems: isMobile ? "flex-end" : "center", justifyContent: "center",
             animation: "fadeIn 0.3s ease",
-            padding: 24,
+            padding: isMobile ? 0 : 24,
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
               background: THEME.surface, border: `1px solid ${THEME.border}`,
-              borderRadius: 20, padding: 40, maxWidth: 560, width: "100%",
+              borderRadius: isMobile ? "20px 20px 0 0" : 20,
+              padding: isMobile ? "32px 24px 40px" : 40,
+              maxWidth: 560, width: "100%",
+              maxHeight: isMobile ? "85vh" : "auto",
+              overflowY: isMobile ? "auto" : "visible",
               position: "relative",
-              animation: "fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              animation: isMobile ? "fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)" : "fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
             <div style={{
-              position: "absolute", top: 0, left: 32, right: 32, height: 3,
+              position: "absolute", top: 0, left: isMobile ? 24 : 32, right: isMobile ? 24 : 32, height: 3,
               background: `linear-gradient(90deg, transparent, ${selected.color}, transparent)`,
               borderRadius: "0 0 4px 4px",
             }} />
@@ -652,8 +797,8 @@ function ProjectsPage() {
               style={{
                 position: "absolute", top: 16, right: 16,
                 background: `${THEME.bg}80`, border: `1px solid ${THEME.border}`,
-                color: THEME.textDim, width: 32, height: 32, borderRadius: 8,
-                cursor: "pointer", fontSize: 16, display: "flex",
+                color: THEME.textDim, width: 36, height: 36, borderRadius: 8,
+                cursor: "pointer", fontSize: 18, display: "flex",
                 alignItems: "center", justifyContent: "center",
                 transition: "all 0.2s ease",
               }}
@@ -662,32 +807,32 @@ function ProjectsPage() {
             >×</button>
 
             <span style={{
-              fontSize: 48,
+              fontSize: isMobile ? 40 : 48,
               filter: `drop-shadow(0 0 16px ${selected.color}50)`,
             }}>{selected.icon}</span>
             <h3 style={{
-              fontFamily: "'Outfit', sans-serif", fontSize: 28, fontWeight: 700,
+              fontFamily: "'Outfit', sans-serif", fontSize: isMobile ? 24 : 28, fontWeight: 700,
               marginTop: 16, marginBottom: 4,
             }}>{selected.title}</h3>
             <p style={{
-              fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
-              color: selected.color, marginBottom: 20, fontWeight: 500,
+              fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 13,
+              color: selected.color, marginBottom: 16, fontWeight: 500,
             }}>{selected.subtitle}</p>
             <p style={{
-              fontSize: 15, color: THEME.textMid, lineHeight: 1.7, marginBottom: 28,
+              fontSize: isMobile ? 14 : 15, color: THEME.textMid, lineHeight: 1.7, marginBottom: 24,
             }}>{selected.description}</p>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
               {selected.tags.map(tag => (
                 <span key={tag} style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                  color: selected.color, padding: "5px 12px", borderRadius: 6,
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 11 : 12,
+                  color: selected.color, padding: isMobile ? "4px 10px" : "5px 12px", borderRadius: 6,
                   background: `${selected.color}12`, border: `1px solid ${selected.color}25`,
                 }}>{tag}</span>
               ))}
             </div>
 
-            <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ display: "flex", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
               <a href={selected.github} style={{
                 flex: 1, textAlign: "center", padding: "12px 20px",
                 background: THEME.bg, border: `1px solid ${THEME.border}`,
@@ -738,19 +883,20 @@ function ProjectsPage() {
             display: "flex", flexDirection: "column",
             alignItems: "center", justifyContent: "center",
             animation: "fadeIn 0.3s ease",
-            padding: 24,
+            padding: isMobile ? 16 : 24,
           }}
         >
           <button
             onClick={() => setShowVideo(false)}
             style={{
-              position: "absolute", top: 24, left: 24,
+              position: "absolute", top: isMobile ? 16 : 24, left: isMobile ? 16 : 24,
               background: `${THEME.surface}`, border: `1px solid ${THEME.border}`,
-              color: THEME.text, padding: "10px 20px", borderRadius: 10,
-              cursor: "pointer", fontSize: 14, fontWeight: 500,
+              color: THEME.text, padding: isMobile ? "8px 14px" : "10px 20px", borderRadius: 10,
+              cursor: "pointer", fontSize: isMobile ? 13 : 14, fontWeight: 500,
               fontFamily: "'JetBrains Mono', monospace",
               display: "flex", alignItems: "center", gap: 8,
               transition: "all 0.2s ease",
+              zIndex: 10,
             }}
             onMouseEnter={e => {
               e.target.style.borderColor = THEME.accent;
@@ -765,21 +911,24 @@ function ProjectsPage() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              maxWidth: "90vw", maxHeight: "80vh", width: "100%",
+              maxWidth: isMobile ? "100%" : "90vw", maxHeight: isMobile ? "85vh" : "80vh", width: "100%",
               display: "flex", flexDirection: "column", alignItems: "center",
+              paddingTop: isMobile ? 60 : 0,
             }}
           >
             <h3 style={{
-              fontFamily: "'Outfit', sans-serif", fontSize: 24, fontWeight: 700,
-              marginBottom: 20, color: THEME.text,
+              fontFamily: "'Outfit', sans-serif", fontSize: isMobile ? 18 : 24, fontWeight: 700,
+              marginBottom: isMobile ? 12 : 20, color: THEME.text,
+              textAlign: "center", padding: isMobile ? "0 16px" : 0,
             }}>{selected.title} Demo</h3>
             <video
               controls
               autoPlay
+              playsInline
               style={{
-                maxWidth: "100%", maxHeight: "70vh", borderRadius: 12,
+                maxWidth: "100%", maxHeight: isMobile ? "70vh" : "70vh", borderRadius: isMobile ? 8 : 12,
                 border: `1px solid ${THEME.border}`,
-                boxShadow: `0 0 60px ${selected.color}30`,
+                boxShadow: `0 0 ${isMobile ? "30px" : "60px"} ${selected.color}30`,
               }}
             >
               <source src={selected.live} type="video/mp4" />
@@ -793,47 +942,56 @@ function ProjectsPage() {
 }
 
 function AboutPage() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <div style={{
-      minHeight: "100vh", padding: "120px 40px 80px",
+      minHeight: "100vh", padding: isMobile ? "100px 16px 60px" : "120px 40px 80px",
       maxWidth: 900, margin: "0 auto", position: "relative",
     }}>
-      <GlowOrb color={THEME.blue} size="300px" top="100px" left="75%" />
-      <GlowOrb color={THEME.accent} size="250px" top="60%" left="-5%" delay={2} />
+      <GlowOrb color={THEME.blue} size={isMobile ? "180px" : "300px"} top="100px" left="75%" />
+      <GlowOrb color={THEME.accent} size={isMobile ? "150px" : "250px"} top="60%" left="-5%" delay={2} />
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <AnimatedEntry delay={0.1}>
           <p style={{
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 13,
             color: THEME.accent, marginBottom: 12,
           }}>{"// about me"}</p>
         </AnimatedEntry>
         <AnimatedEntry delay={0.15}>
           <h2 style={{
-            fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 5vw, 52px)",
-            fontWeight: 800, marginBottom: 40, letterSpacing: "-1.5px",
+            fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 5vw, 52px)",
+            fontWeight: 800, marginBottom: isMobile ? 28 : 40, letterSpacing: "-1.5px",
           }}>About</h2>
         </AnimatedEntry>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: isMobile ? 16 : 24 }}>
           {/* Bio terminal */}
           <AnimatedEntry delay={0.25} style={{ gridColumn: "1 / -1" }}>
             <div style={{
               background: THEME.surface, border: `1px solid ${THEME.border}`,
-              borderRadius: 16, padding: 32,
+              borderRadius: isMobile ? 12 : 16, padding: isMobile ? 20 : 32,
             }}>
               <div style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                color: THEME.textDim, marginBottom: 20,
+                fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 11 : 12,
+                color: THEME.textDim, marginBottom: isMobile ? 16 : 20,
                 display: "flex", alignItems: "center", gap: 8,
               }}>
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: THEME.accent }} />
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f59e0b" }} />
-                <span style={{ width: 10, height: 10, borderRadius: "50%", background: THEME.danger }} />
+                <span style={{ width: isMobile ? 8 : 10, height: isMobile ? 8 : 10, borderRadius: "50%", background: THEME.accent }} />
+                <span style={{ width: isMobile ? 8 : 10, height: isMobile ? 8 : 10, borderRadius: "50%", background: "#f59e0b" }} />
+                <span style={{ width: isMobile ? 8 : 10, height: isMobile ? 8 : 10, borderRadius: "50%", background: THEME.danger }} />
                 <span style={{ marginLeft: 12 }}>about.md</span>
               </div>
               <p style={{
-                fontSize: 16, color: THEME.textMid, lineHeight: 1.8,
+                fontSize: isMobile ? 14 : 16, color: THEME.textMid, lineHeight: 1.8,
               }}>
                 I'm a Computer Science student at <span style={{ color: THEME.text, fontWeight: 500 }}>Syracuse University</span> with
                 a passion for building products that solve real problems. I thrive in fast-paced,
@@ -841,7 +999,7 @@ function AboutPage() {
               </p>
               <br />
               <p style={{
-                fontSize: 16, color: THEME.textMid, lineHeight: 1.8,
+                fontSize: isMobile ? 14 : 16, color: THEME.textMid, lineHeight: 1.8,
               }}>
                 My experience spans <span style={{ color: THEME.accent }}>full-stack development</span>, from
                 designing AI-powered backends to crafting pixel-perfect UIs. I'm especially drawn to
@@ -856,18 +1014,18 @@ function AboutPage() {
             <AnimatedEntry key={category} delay={0.4 + i * 0.1}>
               <div style={{
                 background: THEME.surface, border: `1px solid ${THEME.border}`,
-                borderRadius: 16, padding: 24, height: "100%",
+                borderRadius: isMobile ? 12 : 16, padding: isMobile ? 18 : 24, height: "100%",
               }}>
                 <h4 style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                  color: THEME.accent, marginBottom: 16, textTransform: "uppercase",
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 11 : 12,
+                  color: THEME.accent, marginBottom: isMobile ? 12 : 16, textTransform: "uppercase",
                   letterSpacing: "1.5px",
                 }}>{category}</h4>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: isMobile ? 6 : 8 }}>
                   {skills.map(skill => (
                     <span key={skill} style={{
-                      fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
-                      color: THEME.textMid, padding: "6px 12px",
+                      fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 13,
+                      color: THEME.textMid, padding: isMobile ? "5px 10px" : "6px 12px",
                       background: THEME.bg, border: `1px solid ${THEME.border}`,
                       borderRadius: 8, transition: "all 0.2s ease",
                       cursor: "default",
@@ -891,23 +1049,23 @@ function AboutPage() {
           <AnimatedEntry delay={0.8} style={{ gridColumn: "1 / -1" }}>
             <div style={{
               background: THEME.surface, border: `1px solid ${THEME.border}`,
-              borderRadius: 16, padding: 28,
-              display: "flex", alignItems: "center", gap: 24,
+              borderRadius: isMobile ? 12 : 16, padding: isMobile ? 20 : 28,
+              display: "flex", alignItems: "center", gap: isMobile ? 16 : 24,
             }}>
               <div style={{
-                width: 56, height: 56, borderRadius: 14,
+                width: isMobile ? 48 : 56, height: isMobile ? 48 : 56, borderRadius: isMobile ? 12 : 14,
                 background: `linear-gradient(135deg, ${THEME.accent}20, ${THEME.purple}20)`,
                 border: `1px solid ${THEME.border}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 24, flexShrink: 0,
+                fontSize: isMobile ? 20 : 24, flexShrink: 0,
               }}>🎓</div>
               <div>
                 <h4 style={{
-                  fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 600,
+                  fontFamily: "'Outfit', sans-serif", fontSize: isMobile ? 16 : 18, fontWeight: 600,
                   marginBottom: 4,
                 }}>Syracuse University</h4>
                 <p style={{
-                  fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 11 : 13,
                   color: THEME.textDim,
                 }}>B.S. Computer Science • Expected 2027</p>
               </div>
@@ -920,30 +1078,38 @@ function AboutPage() {
 }
 
 function ContactPage() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <div style={{
-      minHeight: "100vh", padding: "120px 40px 80px",
+      minHeight: "100vh", padding: isMobile ? "100px 16px 60px" : "120px 40px 80px",
       width: "100%", position: "relative",
     }}>
-      <GlowOrb color={THEME.accent} size="350px" top="150px" left="80%" />
+      <GlowOrb color={THEME.accent} size={isMobile ? "200px" : "350px"} top="150px" left="80%" />
 
       <div style={{ position: "relative", zIndex: 1 }}>
         <AnimatedEntry delay={0.1}>
           <p style={{
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 13,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 13,
             color: THEME.accent, marginBottom: 12,
           }}>{"// let's connect"}</p>
         </AnimatedEntry>
         <AnimatedEntry delay={0.15}>
           <h2 style={{
-            fontFamily: "'Outfit', sans-serif", fontSize: "clamp(36px, 5vw, 52px)",
+            fontFamily: "'Outfit', sans-serif", fontSize: "clamp(32px, 5vw, 52px)",
             fontWeight: 800, marginBottom: 12, letterSpacing: "-1.5px",
           }}>Get in Touch</h2>
         </AnimatedEntry>
         <AnimatedEntry delay={0.2}>
           <p style={{
-            fontSize: 16, color: THEME.textMid, marginBottom: 48,
+            fontSize: isMobile ? 14 : 16, color: THEME.textMid, marginBottom: isMobile ? 32 : 48,
             maxWidth: 460, lineHeight: 1.6,
           }}>
             Have an opportunity, project idea, or just want to chat? I'd love to hear from you.
@@ -953,12 +1119,13 @@ function ContactPage() {
         {/* Contact links */}
         <AnimatedEntry delay={0.3}>
           <div style={{
-            display: "flex", flexDirection: "column", gap: 14, marginBottom: 48,
+            display: "flex", flexDirection: "column", gap: isMobile ? 12 : 14, marginBottom: isMobile ? 32 : 48,
+            maxWidth: 500,
           }}>
             {[
-              { label: "Email", value: "larenzquashie406@gmail.com", href: "mailto:larenzquashie406@gmail.com", icon: "✉", color: THEME.accent },
+              { label: "Email", value: isMobile ? "larenzquashie406@..." : "larenzquashie406@gmail.com", href: "mailto:larenzquashie406@gmail.com", icon: "✉", color: THEME.accent },
               { label: "GitHub", value: "github.com/lq23", href: "https://github.com/lq23", icon: "◆", color: THEME.text },
-              { label: "LinkedIn", value: "linkedin.com/in/larenzquashie/", href: "https://linkedin.com/in/larenzquashie/", icon: "▣", color: THEME.blue },
+              { label: "LinkedIn", value: isMobile ? "linkedin.com/in/larenz..." : "linkedin.com/in/larenzquashie/", href: "https://linkedin.com/in/larenzquashie/", icon: "▣", color: THEME.blue },
             ].map((link, i) => (
               <a
                 key={link.label}
@@ -966,14 +1133,14 @@ function ContactPage() {
                 target={link.label === "Email" ? "_self" : "_blank"}
                 rel="noopener noreferrer"
                 style={{
-                  display: "flex", alignItems: "center", gap: 16,
+                  display: "flex", alignItems: "center", gap: isMobile ? 12 : 16,
                   background: THEME.surface, border: `1px solid ${THEME.border}`,
-                  borderRadius: 14, padding: "18px 24px",
+                  borderRadius: isMobile ? 12 : 14, padding: isMobile ? "14px 16px" : "18px 24px",
                   textDecoration: "none", transition: "all 0.3s ease",
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.borderColor = `${link.color}40`;
-                  e.currentTarget.style.transform = "translateX(8px)";
+                  if (!isMobile) e.currentTarget.style.transform = "translateX(8px)";
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.borderColor = THEME.border;
@@ -981,20 +1148,23 @@ function ContactPage() {
                 }}
               >
                 <span style={{
-                  width: 40, height: 40, borderRadius: 10,
+                  width: isMobile ? 36 : 40, height: isMobile ? 36 : 40, borderRadius: isMobile ? 8 : 10,
                   background: `${link.color}15`, border: `1px solid ${link.color}25`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 18,
+                  fontSize: isMobile ? 16 : 18, flexShrink: 0,
                 }}>{link.icon}</span>
-                <div>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{
-                    fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 10 : 11,
                     color: THEME.textDim, marginBottom: 2,
                   }}>{link.label}</p>
-                  <p style={{ fontSize: 15, color: THEME.text, fontWeight: 500 }}>{link.value}</p>
+                  <p style={{
+                    fontSize: isMobile ? 13 : 15, color: THEME.text, fontWeight: 500,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>{link.value}</p>
                 </div>
                 <span style={{
-                  marginLeft: "auto", color: THEME.textDim, fontSize: 18,
+                  marginLeft: "auto", color: THEME.textDim, fontSize: isMobile ? 16 : 18, flexShrink: 0,
                 }}>↗</span>
               </a>
             ))}
@@ -1009,6 +1179,14 @@ function ContactPage() {
 export default function Portfolio() {
   const [page, setPage] = useState("home");
   const [transitionKey, setTransitionKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const navigate = (newPage) => {
     setTransitionKey(k => k + 1);
@@ -1038,13 +1216,13 @@ export default function Portfolio() {
 
         {/* Footer */}
         <footer style={{
-          padding: "32px 40px", borderTop: `1px solid ${THEME.border}`,
-          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: isMobile ? "24px 16px" : "32px 40px", borderTop: `1px solid ${THEME.border}`,
+          display: "flex", justifyContent: "center", alignItems: "center",
           position: "relative", zIndex: 1,
         }}>
           <span style={{
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-            color: THEME.textDim,
+            fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 11 : 12,
+            color: THEME.textDim, textAlign: "center",
           }}>© 2025 Larenz Quashie. Built with React.</span>
         
         </footer>
