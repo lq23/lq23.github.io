@@ -36,7 +36,7 @@ const PROJECTS = [
     year: "2026",
   },
   {
-    title: "Marke Mind",
+    title: "Market Mind",
     subtitle: "AI Sales & Inventory Platform",
     description: "An AI-powered platform for sales analytics and inventory management, leveraging LLM architecture for intelligent business insights.",
     tags: ["FastAPI", "PostgreSQL", "LLM", "Python"],
