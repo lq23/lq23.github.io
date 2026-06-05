@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RENZ } from "./assets/Signature";
+import FaultyTerminal from "./components/FaultyTerminal";
+import FuzzyText from "./components/FuzzyText";
 
 console.clear();
 console.log(RENZ);
@@ -154,26 +156,35 @@ const globalStyles = `
 
 // ─── COMPONENTS ───────────────────────────────────────────────
 
-function GridBackground() {
+function TerminalBackground() {
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden",
     }}>
-      <div style={{
-        position: "absolute", inset: "-30px",
-        backgroundImage: `linear-gradient(${THEME.border}55 1px, transparent 1px), linear-gradient(90deg, ${THEME.border}55 1px, transparent 1px)`,
-        backgroundSize: "30px 30px",
-        animation: "gridScroll 8s linear infinite",
-        opacity: 0.3,
-      }} />
+      <FaultyTerminal
+        scale={1.5}
+        gridMul={[2, 1]}
+        digitSize={1.2}
+        timeScale={0.5}
+        pause={false}
+        scanlineIntensity={0.5}
+        glitchAmount={1}
+        flickerAmount={1}
+        noiseAmp={1}
+        chromaticAberration={0}
+        dither={0}
+        curvature={0.1}
+        tint="#f22b2b"
+        mouseReact={false}
+        mouseStrength={0.5}
+        pageLoadAnimation
+        brightness={0.6}
+        style={{ width: "100%", height: "100%" }}
+      />
       <div style={{
         position: "absolute", inset: 0,
-        background: `radial-gradient(ellipse 60% 50% at 50% 50%, transparent, ${THEME.bg})`,
-      }} />
-      <div style={{
-        position: "absolute", width: "100%", height: "4px",
-        background: `linear-gradient(90deg, transparent, ${THEME.accent}15, transparent)`,
-        animation: "scanline 4s linear infinite",
+        background: `radial-gradient(ellipse 70% 60% at 50% 50%, transparent 20%, ${THEME.bg} 85%)`,
+        opacity: 0.9,
       }} />
     </div>
   );
@@ -240,19 +251,31 @@ function Navbar({ page, setPage }) {
         <div
           onClick={() => handleNavClick("home")}
           style={{
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
-            fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, fontSize: isMobile ? 16 : 18,
-            letterSpacing: "-0.5px",
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
           }}
         >
           <span style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: 32, height: 32, borderRadius: 8,
             background: THEME.accentDim, border: `1px solid ${THEME.accent}40`,
-            fontSize: 14, color: THEME.accent,
+            fontSize: 14, color: THEME.accent, flexShrink: 0,
           }}>L</span>
-          <span style={{ color: THEME.text }}>Larenz</span>
-          <span style={{ color: THEME.accent }}>.dev</span>
+          <FuzzyText
+            fontSize={isMobile ? 16 : 18}
+            fontWeight={700}
+            fontFamily="'JetBrains Mono', monospace"
+            gradient={[THEME.text, THEME.accent]}
+            letterSpacing={-0.5}
+            fuzzRange={isMobile ? 12 : 16}
+            paddingLeft={2}
+            paddingRight={isMobile ? 18 : 22}
+            baseIntensity={0.2}
+            hoverIntensity={0.5}
+            enableHover
+            style={{ display: "block", height: isMobile ? 20 : 22 }}
+          >
+            Larenz.dev
+          </FuzzyText>
         </div>
 
         {/* Desktop Nav */}
@@ -364,8 +387,7 @@ function Navbar({ page, setPage }) {
             fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
             color: THEME.textDim,
           }}>
-            <p>Available for internships</p>
-            <p style={{ marginTop: 8 }}>larenzquashie406@gmail.com</p>
+            <p>larenzquashie406@gmail.com</p>
           </div>
         </div>
       )}
@@ -574,26 +596,7 @@ function HomePage({ setPage }) {
       <GlowOrb color={THEME.blue} size={isMobile ? "150px" : "250px"} top="60%" left="20%" delay={4} />
 
       <div style={{ position: "relative", zIndex: 1, textAlign: "center", maxWidth: 800, width: "100%" }}>
-        {/* Status badge */}
         <AnimatedEntry delay={0.1}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? 12 : 14,
-            color: THEME.accent, marginBottom: isMobile ? 24 : 32,
-            background: THEME.accentDim, padding: isMobile ? "6px 14px" : "8px 20px", borderRadius: 100,
-            border: `1px solid ${THEME.accent}25`,
-          }}>
-            <span style={{
-              width: 8, height: 8, borderRadius: "50%",
-              background: "#00e5a0",
-              animation: "glowPulse 2s ease-in-out infinite",
-              boxShadow: "0 0 8px #00e5a0",
-            }} />
-            available for internships
-          </div>
-        </AnimatedEntry>
-
-        <AnimatedEntry delay={0.2}>
           <h1 style={{
             fontFamily: "'Outfit', sans-serif", fontSize: "clamp(48px, 7vw, 80px)",
             fontWeight: 800, lineHeight: 1.05, marginBottom: 24,
@@ -609,7 +612,7 @@ function HomePage({ setPage }) {
           </h1>
         </AnimatedEntry>
 
-        <AnimatedEntry delay={0.35}>
+        <AnimatedEntry delay={0.25}>
           <p style={{
             fontSize: isMobile ? 15 : 18, color: THEME.textMid, maxWidth: 520,
             margin: isMobile ? "0 auto 32px" : "0 auto 44px", lineHeight: 1.7, fontWeight: 300,
@@ -620,7 +623,7 @@ function HomePage({ setPage }) {
           </p>
         </AnimatedEntry>
 
-        <AnimatedEntry delay={0.5}>
+        <AnimatedEntry delay={0.4}>
           <div style={{
             display: "flex", gap: isMobile ? 12 : 16, justifyContent: "center",
             flexWrap: "wrap", flexDirection: isMobile ? "column" : "row",
@@ -672,7 +675,7 @@ function HomePage({ setPage }) {
         </AnimatedEntry>
 
         {/* Tech stack */}
-        <AnimatedEntry delay={0.65}>
+        <AnimatedEntry delay={0.55}>
           <div style={{
             marginTop: isMobile ? 48 : 80, display: "flex", gap: isMobile ? 8 : 12,
             justifyContent: "center", flexWrap: "wrap",
@@ -1206,7 +1209,7 @@ export default function Portfolio() {
   return (
     <div style={{ background: THEME.bg, minHeight: "100vh", color: THEME.text }}>
       <style>{globalStyles}</style>
-      <GridBackground />
+      <TerminalBackground />
       <Navbar page={page} setPage={navigate} />
       <div id="scroll-root" key={transitionKey} style={{
         height: "100vh", overflowY: "auto",
