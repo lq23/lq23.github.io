@@ -57,7 +57,7 @@ const PROJECTS = [
     subtitle: "Business to Business Wholesale Ordering Platform",
     description: "A private, invite-only wholesale ordering portal for a regulated consumer-goods distributor. Features a product catalog, case-quantity ordering, snapshot-based order integrity, automated PDF summaries, transactional email, and an admin dashboard, built with server-authoritative pricing and compliance-first access control.",
     tags: [ "Next.js", "FastAPI" , "PostgreSQL" , "Supabase" , "Docker"],
-    color: "#f59e0b",
+    color: "##ff2400",
     icon: "🧾",
     github: "#",
     live: "#",
