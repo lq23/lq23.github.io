@@ -795,7 +795,7 @@ function AboutPage() {
                 fontSize: 16, color: THEME.textMid, lineHeight: 1.8,
               }}>
                 My experience spans <span style={{ color: THEME.accent }}>full-stack development</span>, from
-                designing AI-powered backends to crafting pixel-perfect UIs. I'm especially drawn to
+                designing AI-powered backends to crafting clean, shippable UIs. I'm especially drawn to
                 projects at the intersection of <span style={{ color: THEME.purple }}>AI/ML</span> and
                 user-facing products.
               </p>
